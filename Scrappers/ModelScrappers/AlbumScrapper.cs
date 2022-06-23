@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MusAppScrapper.Models;
@@ -31,7 +32,7 @@ namespace MusAppScrapper
             Task.WaitAll(albumNameListTask, albumAvatarListTask, albumDescriptionListTaks);
             
             var albumNameList = albumNameListTask.Result;
-            var albumAvatarList = albumAvatarListTask.Result;
+            var albumAvatarList = albumAvatarListTask.Result.ToHashSet().ToList();
             var albumDescriptionList = albumDescriptionListTaks.Result;
 
             for (int i = 0; i < albumNameList.Count; i++)
