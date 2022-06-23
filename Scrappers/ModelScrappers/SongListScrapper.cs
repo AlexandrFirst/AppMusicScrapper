@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MusAppScrapper.Models;
 using MusAppScrapper.Parsers;
@@ -20,17 +21,21 @@ namespace MusAppScrapper
 
 
             BaseNodeHtmlParser<string> songNameParser = new SongNameParser();
-            var songsNameList = songNameParser.parseNodes(songNamesHtml);
-
             BaseNodeHtmlParser<string> songArtistParser = new SongArtistParser();
-            var songsArtistList = songArtistParser.parseNodes(songArtistsHtml);
-
             BaseNodeHtmlParser<string> songAlbumParser = new SongAlbumParser();
-            var songsAlbumList = songAlbumParser.parseNodes(songAlbumsHtml);
-
             BaseNodeHtmlParser<string> songDurationParser = new SongDurationParser();
-            var songsDurationList = songDurationParser.parseNodes(songDurationsHtml);
 
+            var songsNameListTask = Task.Factory.StartNew<List<string>>(() => songNameParser.parseNodes(songNamesHtml));
+            var songsArtistListTask = Task.Factory.StartNew<List<string>>(() => songArtistParser.parseNodes(songArtistsHtml));
+            var songsAlbumListTask = Task.Factory.StartNew<List<string>>(() => songAlbumParser.parseNodes(songAlbumsHtml));
+            var songsDurationListTask = Task.Factory.StartNew<List<string>>(() => songDurationParser.parseNodes(songDurationsHtml));
+
+            Task.WaitAll(songsNameListTask, songsArtistListTask, songsAlbumListTask, songsDurationListTask);
+
+            var songsNameList = songsNameListTask.Result;
+            var songsArtistList = songsArtistListTask.Result;
+            var songsAlbumList = songsAlbumListTask.Result;
+            var songsDurationList = songsDurationListTask.Result;
 
             for (int i = 0; i < songsNameList.Count; i++)
             {

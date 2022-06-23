@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using MusAppScrapper.Models;
 using MusAppScrapper.Parsers;
@@ -17,14 +18,21 @@ namespace MusAppScrapper
             HtmlNodeCollection albumDescriptionsHtml = doc.DocumentNode.SelectNodes("//div[@class='product-page-header__metadata--notes typography-body-tall']");
 
             BaseNodeHtmlParser<string> albumNameParser = new AlbumNameParser();
-            var albumNameList = albumNameParser.parseNodes(albumNamesHtml);
-
             BaseNodeHtmlParser<string> albumAvatarParser = new AlbumAvatarParser();
-            var albumAvatarList = albumAvatarParser.parseNodes(albumAvatarsHtml);
-
             BaseNodeHtmlParser<string> albumDescriptionParser = new AlbumDescriptionParser();
-            var albumDescriptionList = albumDescriptionParser.parseNodes(albumDescriptionsHtml);
 
+
+            var albumNameListTask = Task.Factory.StartNew<List<string>>(() => albumNameParser.parseNodes(albumNamesHtml));
+
+            var albumAvatarListTask = Task.Factory.StartNew<List<string>>(() => albumAvatarParser.parseNodes(albumAvatarsHtml));
+
+            var albumDescriptionListTaks = Task.Factory.StartNew<List<string>>(() => albumDescriptionParser.parseNodes(albumDescriptionsHtml));
+
+            Task.WaitAll(albumNameListTask, albumAvatarListTask, albumDescriptionListTaks);
+            
+            var albumNameList = albumNameListTask.Result;
+            var albumAvatarList = albumAvatarListTask.Result;
+            var albumDescriptionList = albumDescriptionListTaks.Result;
 
             for (int i = 0; i < albumNameList.Count; i++)
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MusAppScrapper.Models;
 
 namespace MusAppScrapper
@@ -18,11 +19,12 @@ namespace MusAppScrapper
 
         public void Run()
         {
-            List<MusicItem> songs = songScraper.ParseLinks(scrapUrl);
-            List<MusicAlbum> albums = albumScraper.ParseLinks(scrapUrl);
+            Task<List<MusicItem>> songScraperTask = Task.Factory.StartNew<List<MusicItem>>(() => songScraper.ParseLinks(scrapUrl));
+            Task<List<MusicAlbum>> albumScraperTask = Task.Factory.StartNew<List<MusicAlbum>>(() => albumScraper.ParseLinks(scrapUrl));
+            Task.WaitAll(songScraperTask, albumScraperTask);
 
-            DisplayContent(albums);
-            DisplayContent(songs);
+            DisplayContent(albumScraperTask.Result);
+            DisplayContent(songScraperTask.Result);
         }
 
         private void DisplayContent(List<MusicItem> songs)
